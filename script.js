@@ -632,10 +632,10 @@ async function exportToExcel() {
         batchData.forEach(student => {
 
 
-            const sumRS = (student.gmScore || 0) + (student.fmScore || 0) +
-                (student.shmScore || 0) + (student.rlmScore || 0) +
-                (student.elScore || 0) + (student.cmScore || 0) +
-                (student.semScore || 0);
+            const sumRS = (student.gmRaw || 0) + (student.fmRaw || 0) +
+                (student.shmRaw || 0) + (student.rlmRaw || 0) +
+                (student.elRaw || 0) + (student.cmRaw || 0) +
+                (student.semRaw || 0);
 
             // Calculate Sum of Scaled Scores (SS)
             const sumSS = (student.gmScaled || 0) + (student.fmScaled || 0) +
@@ -649,13 +649,13 @@ async function exportToExcel() {
                 (student.sex === "M" ? "MALE" : "FEMALE"),
 
                 // Domain Scores: Raw (RS) then Scaled (SS)
-                student.gmScore || 0, student.gmScaled || 0,
-                student.fmScore || 0, student.fmScaled || 0,
-                student.shmScore || 0, student.shmScaled || 0,
-                student.rlmScore || 0, student.rlmScaled || 0,
-                student.elScore || 0, student.elScaled || 0,
-                student.cmScore || 0, student.cmScaled || 0,
-                student.semScore || 0, student.semScaled || 0,
+               student.gmRaw || 0, student.gmScaled || 0,
+                student.fmRaw || 0, student.fmScaled || 0,
+                student.shmRaw || 0, student.shmScaled || 0,
+                student.rlmRaw || 0, student.rlmScaled || 0,
+                student.elSRaw || 0, student.elScaled || 0,
+                student.cmRaw || 0, student.cmScaled || 0,
+                student.semRaw || 0, student.semScaled || 0,
 
                 // Totals and Interpretation
                 sumRS,                       // Total Raw Score
@@ -904,4 +904,5 @@ async function exportToExcel() {
         alert("Export failed: " + error.message);
     }
 }
+
 
