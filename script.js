@@ -653,7 +653,7 @@ async function exportToExcel() {
                 student.fmRaw || 0, student.fmScaled || 0,
                 student.shmRaw || 0, student.shmScaled || 0,
                 student.rlmRaw || 0, student.rlmScaled || 0,
-                student.elSRaw || 0, student.elScaled || 0,
+                student.elRaw || 0, student.elScaled || 0,
                 student.cmRaw || 0, student.cmScaled || 0,
                 student.semRaw || 0, student.semScaled || 0,
 
@@ -904,5 +904,6 @@ async function exportToExcel() {
         alert("Export failed: " + error.message);
     }
 }
+
 
 
