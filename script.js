@@ -602,9 +602,15 @@ async function exportToExcel() {
         // Define Headers: RS = Raw Score, SS = Scaled Score
         const summaryHeaders = [
             "PANGALAN NG MGA BATA", "EDAD", "KASARIAN",
-            "GM (SS)", "FM (SS)", "SH (SS)",
-            "RL (SS)", "EL (SS)", "CG (SS)", "SE (SS)",
-            "SUM OF SCALED SCORES",
+            "Gross Motor (RS)", "GM (SS)",
+            "Fine Motor (RS)", "FM (SS)",
+            "Self Help (RS)", "SH (SS)",
+            "Receptive Language (RS)", "RL (SS)",
+            "Expressive Language (RS)", "EL (SS)",
+            "Cognitive Domain (RS)", "CG (SS)",
+            "Socio-Emotional (RS)", "SE (SS)",
+            "TOTAL Raw Score",
+            "TOTAL Sum Scaled Score",
             "STANDARD SCORE",
             "INTERPRETATION"
         ];
@@ -619,10 +625,18 @@ async function exportToExcel() {
 
         const summaryHeaderRow = summarySheet.addRow(summaryHeaders);
         summaryHeaderRow.height = 35;
+        summaryHeaderRow.width = 50;
         summaryHeaderRow.eachCell((cell) => { cell.style = summaryHeaderStyle; });
 
         // Add Student Data Rows
         batchData.forEach(student => {
+
+
+            const sumRS = (student.gmScore || 0) + (student.fmScore || 0) +
+                (student.shmScore || 0) + (student.rlmScore || 0) +
+                (student.elScore || 0) + (student.cmScore || 0) +
+                (student.semScore || 0);
+
             // Calculate Sum of Scaled Scores (SS)
             const sumSS = (student.gmScaled || 0) + (student.fmScaled || 0) +
                 (student.shmScaled || 0) + (student.rlmScaled || 0) +
@@ -633,42 +647,70 @@ async function exportToExcel() {
                 student.name.toUpperCase(),
                 student.age || "N/A",
                 (student.sex === "M" ? "MALE" : "FEMALE"),
-                student.gmScaled || 0,
-                student.fmScaled || 0,
-                student.shmScaled || 0,
-                student.rlmScaled || 0,
-                student.elScaled || 0,
-                student.cmScaled || 0,
-                student.semScaled || 0,
-                sumSS,                       // Sum of Scaled Scores
-                student.totalStd || 0,       // Standard Score from your calculation logic
+
+                // Domain Scores: Raw (RS) then Scaled (SS)
+                student.gmScore || 0, student.gmScaled || 0,
+                student.fmScore || 0, student.fmScaled || 0,
+                student.shmScore || 0, student.shmScaled || 0,
+                student.rlmScore || 0, student.rlmScaled || 0,
+                student.elScore || 0, student.elScaled || 0,
+                student.cmScore || 0, student.cmScaled || 0,
+                student.semScore || 0, student.semScaled || 0,
+
+                // Totals and Interpretation
+                sumRS,                       // Total Raw Score
+                sumSS,                       // Total Scaled Score
+                student.totalStd || 0,       // Standard Score
                 student.finalInterp || "N/A" // Interpretation
             ];
 
             const newRow = summarySheet.addRow(rowData);
 
-            // Apply formatting to each cell in the row
+            // Apply borders and alignment
             newRow.eachCell((cell, colNumber) => {
-                cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                // 1. Apply Borders and Alignment to EVERY cell
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
                 cell.alignment = { vertical: 'middle', horizontal: 'center' };
 
-                // Highlight the final score columns for better visibility
-                if (colNumber >= 11) {
+                // 2. Highlight the final summary columns (Total RS, Total SS, Std Score, Interpretation)
+                // If you have 3 profile cols + 14 domain cols, summary starts at col 18
+                if (colNumber >= 18) {
                     cell.font = { bold: true };
+                    cell.fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: 'FFF2F2F2' } // Light grey highlight
+                    };
                 }
             });
 
             // Keep names left-aligned for readability
             newRow.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
         });
-
-        // Auto-set column widths for summary sheet
         summarySheet.columns.forEach((col, i) => {
-            if (i === 0) col.width = 35;       // Name column
-            else if (i === 10) col.width = 15; // Sum SS column
-            else if (i === 11) col.width = 15; // Standard Score column
-            else if (i === 12) col.width = 35; // Interpretation column
-            else col.width = 10;               // Others
+            if (i === 0) {
+                col.width = 40; // Name column (needs to be wide)
+            }
+            else if (i === 1 || i === 2) {
+                col.width = 12; // Age and Gender
+            }
+            else if (i >= 3 && i <= 16) {
+                col.width = 8;  // Domain RS and SS columns (can be narrow)
+            }
+            else if (i === 17 || i === 18 || i === 19) {
+                col.width = 18; // TOTAL RS, TOTAL SS, and STANDARD SCORE
+            }
+            else if (i === 20) {
+                col.width = 45; // INTERPRETATION (needs most space)
+            }
+            else {
+                col.width = 10;
+            }
         });
 
 
