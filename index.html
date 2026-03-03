@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PECD CHECKLIST SYSTEM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="pecd logo.png">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .main-container {
+            max-width: 1300px;
+            margin: 30px auto;
+        }
+
+        /* Keeping your specific sidebar behavior */
+        .sidebar-sticky {
+            position: sticky;
+            top: 20px;
+        }
+
+        .list-box {
+            height: 400px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 15px 0;
+        }
+
+        .domain-card {
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+        }
+
+        .domain-header {
+            background-color: #343a40 !important;
+            color: white;
+            font-weight: 700;
+        }
+
+        .live-summary-footer {
+            background-color: #fffbe6;
+            border-top: 1px solid #ffe58f;
+            padding: 10px 15px;
+        }
+
+        /* Style for each learner "card" in the queue */
+        .student-item {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            /* The boundary outline */
+            border-left: 5px solid #007bff;
+            /* Color accent (Blue for primary) */
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+            line-height: 1.2rem;
+            /* Space between learners */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.1s ease;
+        }
+
+        /* Optional: change the left border color based on gender via JS class */
+        .student-item.gender-F {
+            border-left-color: #d81b60;
+            /* Pink for Female */
+        }
+
+        .student-item:hover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container-fluid main-container">
+        <h2 class="text-center mb-4 fw-bold text-uppercase">Philippine Early Childhood Development Checklist System</h2>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body bg-light">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold small">Learner's Name</label>
+                        <input type="text" id="pName" class="form-control"
+                            placeholder="Last Name, First Name, and Middle Initial">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold small">Gender</label>
+                        <select id="pSex" class="form-select">
+                            <option value="M">M</option>
+                            <option value="F">F</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Birthdate</label>
+                        <input type="date" id="pBirth" class="form-control" onchange="autoComputeAge()">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold small">Age (Y.M.D)</label>
+                        <input type="text" id="pAge" class="form-control bg-white" readonly placeholder="0.0.0">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+
+                <div class="card domain-card">
+                    <div class="card-header domain-header">GROSS MOTOR DOMAIN</div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <tbody id="gm-rows"></tbody>
+                        </table>
+                    </div>
+                    <div class="live-summary-footer">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-success fw-bold">Scaled Score: <span id="gm-scaled">0</span></span>
+                            <span class="text-muted small">Age: <b id="gm-age-display">0.0.0</b></span>
+                            <span>Raw Score: <b id="gm-raw">0</b></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card domain-card">
+                    <div class="card-header domain-header">FINE MOTOR DOMAIN</div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <tbody id="fm-rows"></tbody>
+                        </table>
+                    </div>
+                    <div class="live-summary-footer">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-success fw-bold">Scaled Score: <span id="fm-scaled">0</span></span>
+                            <span class="text-muted small">Age: <b id="fm-age-display">0.0.0</b></span>
+                            <span>Raw Score: <b id="fm-raw">0</b></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card domain-card">
+                    <div class="card-header domain-header">SELF-HELP DOMAIN</div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <tbody id="shm-rows"></tbody>
+                        </table>
+                    </div>
+                    <div class="live-summary-footer">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-success fw-bold">Scaled Score: <span id="shm-scaled">0</span></span>
+                            <span class="text-muted small">Age: <b id="shm-age-display">0.0.0</b></span>
+                            <span>Raw Score: <b id="shm-raw">0</b></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card domain-card">
+                    <div class="card-header domain-header">RECEPTIVE LANGUAGE DOMAIN</div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <tbody id="rlm-rows"></tbody>
+                        </table>
+                    </div>
+                    <div class="live-summary-footer">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-success fw-bold">Scaled Score: <span id="rlm-scaled">0</span></span>
+                            <span class="text-muted small">Age: <b id="rlm-age-display">0.0.0</b></span>
+                            <span>Raw Score: <b id="rlm-raw">0</b></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card domain-card">
+                    <div class="card-header domain-header">EXPRESSIVE LANGUAGE DOMAIN</div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <tbody id="el-rows"></tbody>
+                        </table>
+                    </div>
+                    <div class="live-summary-footer">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-success fw-bold">Scaled Score: <span id="el-scaled">0</span></span>
+                            <span class="text-muted small">Age: <b id="el-age-display">0.0.0</b></span>
+                            <span>Raw Score: <b id="el-raw">0</b></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card domain-card">
+                    <div class="card-header domain-header">COGNITIVE DOMAIN</div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <tbody id="cm-rows"></tbody>
+                        </table>
+                    </div>
+                    <div class="live-summary-footer">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-success fw-bold">Scaled Score: <span id="cm-scaled">0</span></span>
+                            <span class="text-muted small">Age: <b id="cm-age-display">0.0.0</b></span>
+                            <span>Raw Score: <b id="cm-raw">0</b></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card domain-card">
+                    <div class="card-header domain-header">SOCIAL-EMOTIONAL DOMAIN</div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <tbody id="sem-rows"></tbody>
+                        </table>
+                    </div>
+                    <div class="live-summary-footer">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-success fw-bold">Scaled Score: <span id="sem-scaled">0</span></span>
+                            <span class="text-muted small">Age: <b id="sem-age-display">0.0.0</b></span>
+                            <span>Raw Score: <b id="sem-raw">0</b></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-primary shadow-sm mb-5">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">OVERALL SUMMARY</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-4 border-end">
+                                <p class="text-muted mb-1 small">Total Sum Scaled Score</p>
+                                <h4 id="totalScaled" class="text-success fw-bold">0</h4>
+                            </div>
+                            <div class="col-md-4 border-end">
+                                <p class="text-muted mb-1 small">Standard Score</p>
+                                <h4 id="overallStd" class="fw-bold">0</h4>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="text-muted mb-1 small">Interpretation</p>
+                                <h4 id="overallInterp" class="text-primary fw-bold">-</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-lg-4">
+                <div class="sidebar-sticky">
+                    <button class="btn btn-primary w-100 py-3 fw-bold shadow-sm" onclick="saveToBatch()">
+                        ADD TO LEARNERS QUEUE
+                    </button>
+
+                    <div class="list-box shadow-sm" id="studentQueue">
+                    </div>
+
+                    <button class="btn btn-success w-100 py-3 fw-bold shadow-sm" onclick="exportToExcel()">
+                        GENERATE EXCEL FILE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
