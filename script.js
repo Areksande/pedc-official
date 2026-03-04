@@ -512,6 +512,7 @@ function saveToBatch() {
         elRaw: el.raw, elScaled: el.scaled, elInterp: el.interp, elChecks: el.checks,
         cmRaw: cm.raw, cmScaled: cm.scaled, cmInterp: cm.interp, cmChecks: cm.checks,
         semRaw: sem.raw, semScaled: sem.scaled, semInterp: sem.interp, semChecks: sem.checks,
+        totalScaled: totalScaledSum,
         totalStd,
         finalInterp
     };
@@ -547,9 +548,11 @@ function updateSidebar() {
         <div class="student-item">
             <b>${s.name}</b> (${s.sex}) <br>
             Age: ${s.age || "N/A"} <br>
+
+            Sum Scaled Score: ${s.totalScaled || 0} <br>
             Standard Score: ${s.totalStd} <br>
-            Interpretation: ${s.finalInterp}
-            <br>
+            Interpretation: ${s.finalInterp || "N/A"}
+            
             <button onclick="deleteLearner(${index})"
                 style="margin-top:5px;background:red;color:white;border:none;padding:4px 8px;cursor:pointer;">
                 Delete
@@ -571,7 +574,7 @@ function deleteLearner(index) {
 
 
 
-
+//EXCEL///////////////////////////////////////////////////////////////////////////////////////////
 async function exportToExcel() {
     try {
         if (typeof ExcelJS === 'undefined') {
