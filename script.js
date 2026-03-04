@@ -900,3 +900,12 @@ async function exportToExcel() {
 }
 
 
+
+window.addEventListener('load', function() {
+    const splash = document.getElementById('splash-screen');
+    
+    // Set a timeout so it shows for at least 2 seconds for branding
+    setTimeout(() => {
+        splash.classList.add('fade-out');
+    }, 3000); 
+});
