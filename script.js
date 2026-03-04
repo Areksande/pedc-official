@@ -641,7 +641,7 @@ async function exportToExcel() {
             const rowData = [
                 student.name.toUpperCase(),
                 student.age || "N/A",
-                (student.sex === "M" || student.sex === "MALE" ? "MALE" : "FEMALE"),
+                (student.sex === "M" || student.sex === "MALE" ? "Lalaki" : "Babae"),
 
                 // Domain Scores: Raw (RS) then Scaled (SS)
                 student.gmRaw || 0, student.gmScaled || 0,
@@ -787,7 +787,7 @@ async function exportToExcel() {
             const sexCell = worksheet.getCell(3, colNum);
             // Match the dropdown values "M" or "F"
             // If student.sex is "M", show "Male". Otherwise, show "Female  "
-            sexCell.value = (student.sex === "M") ? "Male" : "Female";
+            sexCell.value = (student.sex === "M") ? "Lalaki" : "Babae";
 
             sexCell.style = headerStyle;
             // Apply style to Age cell as well so it matches the rotation
