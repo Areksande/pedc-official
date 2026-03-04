@@ -172,7 +172,7 @@ const scaledScoreTables = {
             11: [5, 5], 12: [null, null], 13: [null, null]
         },
         expressiveLanguage: {
-            1: [null, null], 2: [0, 5], 3: [null, null], 4: [null, null], 5: [null, null],
+            1: [null, null], 2: [0, 5], 3: [null, null], 4: [null, null], 5: [6, 6],
             6: [null, null], 7: [null, null], 8: [7, 7], 9: [null, null], 10: [null, null],
             11: [8, 8], 12: [null, null], 13: [null, null], 14: [null, null], 15: [null, null],
             16: [null, null]
@@ -582,140 +582,19 @@ async function exportToExcel() {
             return;
         }
 
-        batchData.sort((a, b) => {
-            // Sort by Sex: 'Male' comes before 'Female' alphabetically
-            // If your values are 'M' and 'F', 'F' comes first, so we reverse it:
-            if (a.sex !== b.sex) {
-                return a.sex === "Male" ? -1 : 1;
-            }
-            // If sex is the same, sort alphabetically by name
-            return a.name.localeCompare(b.name);
-        });
-
-        batchData.sort((a, b) => a.name.localeCompare(b.name));
-
+        // 1. Setup Workbook and Sheets
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('ECD Checklist');
-
-
-        // --- SHEET 2: SUMMARY REPORT ---
-        // --- SHEET 2: SUMMARY REPORT ---
         const summarySheet = workbook.addWorksheet('Summary Report');
 
-        // Define Headers: RS = Raw Score, SS = Scaled Score
-        const summaryHeaders = [
-            "PANGALAN NG MGA BATA", "EDAD", "KASARIAN",
-            "Gross Motor (RS)", "GM (SS)",
-            "Fine Motor (RS)", "FM (SS)",
-            "Self Help (RS)", "SH (SS)",
-            "Receptive Language (RS)", "RL (SS)",
-            "Expressive Language (RS)", "EL (SS)",
-            "Cognitive Domain (RS)", "CG (SS)",
-            "Socio-Emotional (RS)", "SE (SS)",
-            "TOTAL Sum Scaled Score", // Shifted up
-            "STANDARD SCORE",
-            "INTERPRETATION"
-        ];
+        // 2. Sort Data: Males first, then Females, then alphabetical by name
+        const males = batchData.filter(s => s.sex === "M" || s.sex === "MALE")
+                               .sort((a, b) => a.name.localeCompare(b.name));
+        const females = batchData.filter(s => s.sex === "F" || s.sex === "FEMALE")
+                                 .sort((a, b) => a.name.localeCompare(b.name));
+        const allStudentsSorted = [...males, ...females];
 
-        // Style for Summary Header (Blue background, White text)
-        const summaryHeaderStyle = {
-            font: { bold: true, color: { argb: 'FFFFFF' } },
-            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4472C4' } },
-            alignment: { horizontal: 'center', vertical: 'middle', wrapText: true },
-            border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-        };
-
-        const summaryHeaderRow = summarySheet.addRow(summaryHeaders);
-        summaryHeaderRow.height = 35;
-        summaryHeaderRow.eachCell((cell) => { cell.style = summaryHeaderStyle; });
-
-        // Add Student Data Rows
-        batchData.forEach(student => {
-            // Calculate Sum of Scaled Scores (SS)
-            const sumSS = (student.gmScaled || 0) + (student.fmScaled || 0) +
-                (student.shmScaled || 0) + (student.rlmScaled || 0) +
-                (student.elScaled || 0) + (student.cmScaled || 0) +
-                (student.semScaled || 0);
-
-            // 2. Removed sumRS from rowData
-            const rowData = [
-                student.name.toUpperCase(),
-                student.age || "N/A",
-                (student.sex === "M" || student.sex === "MALE" ? "Lalaki" : "Babae"),
-
-                // Domain Scores: Raw (RS) then Scaled (SS)
-                student.gmRaw || 0, student.gmScaled || 0,
-                student.fmRaw || 0, student.fmScaled || 0,
-                student.shmRaw || 0, student.shmScaled || 0,
-                student.rlmRaw || 0, student.rlmScaled || 0,
-                student.elRaw || 0, student.elScaled || 0,
-                student.cmRaw || 0, student.cmScaled || 0,
-                student.semRaw || 0, student.semScaled || 0,
-
-                // Totals and Interpretation (Note: sumRS is gone)
-                sumSS,                       // Total Scaled Score (Now Col 18)
-                student.totalStd || 0,       // Standard Score
-                student.finalInterp || "N/A" // Interpretation
-            ];
-
-            const newRow = summarySheet.addRow(rowData);
-
-            // Apply borders and alignment
-            newRow.eachCell((cell, colNumber) => {
-                // 1. Apply Borders and Alignment to EVERY cell
-                cell.border = {
-                    top: { style: 'thin' },
-                    left: { style: 'thin' },
-                    bottom: { style: 'thin' },
-                    right: { style: 'thin' }
-                };
-                cell.alignment = { vertical: 'middle', horizontal: 'center' };
-
-                // 2. Highlight the final summary columns (Total RS, Total SS, Std Score, Interpretation)
-                // If you have 3 profile cols + 14 domain cols, summary starts at col 18
-                if (colNumber >= 18) {
-                    cell.font = { bold: true };
-                    cell.fill = {
-                        type: 'pattern',
-                        pattern: 'solid',
-                        fgColor: { argb: 'FFF2F2F2' } // Light grey highlight
-                    };
-                }
-            });
-
-            // Keep names left-aligned for readability
-            newRow.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
-        });
-        summarySheet.columns.forEach((col, i) => {
-            if (i === 0) {
-                col.width = 40; // Name column (needs to be wide)
-            }
-            else if (i === 1 || i === 2) {
-                col.width = 12; // Age and Gender
-            }
-            else if (i >= 3 && i <= 16) {
-                col.width = 8;  // Domain RS and SS columns (can be narrow)
-            }
-            else if (i === 17 || i === 18 || i === 19) {
-                col.width = 18; // TOTAL RS, TOTAL SS, and STANDARD SCORE
-            }
-            else if (i === 20) {
-                col.width = 45; // INTERPRETATION (needs most space)
-            }
-            else {
-                col.width = 10;
-            }
-        });
-
-
-
-
-        // 1. Column Setup
-        worksheet.getColumn(1).width = 5;
-        worksheet.getColumn(2).width = 45;
-        const studentStartCol = 3;
-
-        // 2. Styles
+        // 3. Styles
         const headerStyle = {
             alignment: { textRotation: 90, vertical: 'middle', horizontal: 'center', wrapText: true },
             font: { bold: true, size: 10 },
@@ -725,104 +604,96 @@ async function exportToExcel() {
 
         const scoreLabelStyle = {
             font: { bold: true },
-            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF00' } }, // Yellow
-            border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: '5F9EA0' } }, // Yellow
+            border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
+            alignment: { vertical: 'middle', horizontal: 'center' }
         };
 
-        worksheet.getRow(1).height = 180;
+        // --- SHEET 1: ECD CHECKLIST ---
+        worksheet.getColumn(1).width = 5;
+        worksheet.getColumn(2).width = 45;
+        
+        const labels = [
+            { row: 1, text: "PANGALAN NG MGA BATA" },
+            { row: 2, text: "EDAD" },
+            { row: 3, text: "KASARIAN" }
+        ];
 
-        // 3. Write All Student Names
-        batchData.forEach((student, index) => {
-            const colNum = studentStartCol + index;
+        labels.forEach(label => {
+            const cell = worksheet.getCell(label.row, 2);
+            cell.value = label.text;
+            cell.style = {
+                font: { bold: true, size: 10, name: 'Arial' },
+                alignment: { vertical: 'middle', horizontal: 'center', wrapText: true },
+                border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+            };
+        });
 
-            const labelCol = 2;
-            const nameLabel = worksheet.getCell(1, labelCol);
-            nameLabel.value = "PANGALAN NG MGA BATA";
+        let currentCol = 3; 
+        const studentColMap = new Map();
 
-            const ageLabel = worksheet.getCell(2, labelCol);
-            ageLabel.value = "EDAD";
+        const writeGroup = (label, students) => {
+            if (students.length === 0) return;
+            worksheet.mergeCells(1, currentCol, 3, currentCol);
+            const groupCell = worksheet.getCell(1, currentCol);
+            groupCell.value = label;
+            groupCell.style = {
+                font: { bold: true, size: 12, color: { argb: 'FFFFFF' } },
+                alignment: { vertical: 'middle', horizontal: 'center', textRotation: 90 },
+                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4472C4' } },
+                border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+            };
+            worksheet.getColumn(currentCol).width = 3;
+            currentCol++; 
 
-            const genderLabel = worksheet.getCell(3, labelCol)
-            genderLabel.value = "KASARIAN";
+            students.forEach((student, index) => {
+                studentColMap.set(student.name, currentCol);
+                worksheet.getCell(1, currentCol).value = `${index + 1}. ${student.name.toUpperCase()}`;
+                worksheet.getCell(1, currentCol).style = headerStyle;
+                worksheet.getCell(2, currentCol).value = student.age || "N/A";
+                worksheet.getCell(2, currentCol).style = headerStyle;
+                worksheet.getCell(3, currentCol).value = (label === "LALAKI") ? "Lalaki" : "Babae";
+                worksheet.getCell(3, currentCol).style = headerStyle;
+                worksheet.getColumn(currentCol).width = 5;
+                currentCol++;
+            });
+        };
 
-            [1, 2, 3].forEach(rowNum => {
-                const cell = worksheet.getCell(rowNum, labelCol);
+        writeGroup("LALAKI", males);
+        writeGroup("BABAE", females);
+        worksheet.getRow(1).height = 150;
 
-                cell.font = {
-                    bold: true,
-                    name: 'Arial',
-                    size: 10
-                };
+        // Domains logic for Sheet 1
+        let currentRow = 4;
+        const allDomains = [
+            { title: "GROSS MOTOR DOMAIN", list: milestonesGM, key: "gmChecks", rs: "gmRaw", ss: "gmScaled" },
+            { title: "FINE MOTOR DOMAIN", list: milestoneFM, key: "fmChecks", rs: "fmRaw", ss: "fmScaled" },
+            { title: "SELF-HELP DOMAIN", list: milestoneSHM, key: "shmChecks", rs: "shmRaw", ss: "shmScaled" },
+            { title: "RECEPTIVE LANGUAGE DOMAIN", list: milestoneRLM, key: "rlmChecks", rs: "rlmRaw", ss: "rlmScaled" },
+            { title: "EXPRESSIVE LANGUAGE DOMAIN", list: milestonesEL, key: "elChecks", rs: "elRaw", ss: "elScaled" },
+            { title: "COGNITIVE DOMAIN", list: milestonesCM, key: "cmChecks", rs: "cmRaw", ss: "cmScaled" },
+            { title: "SOCIO-EMOTIONAL DOMAIN", list: milestoneSEM, key: "semChecks", rs: "semRaw", ss: "semScaled" }
+        ];
 
-                cell.alignment = {
-                    vertical: 'middle',
-                    horizontal: 'center',
-                    wrapText: true // Helps if "PANGALAN NG MGA BATA" is long
-                };
-
-                // Add borders to make it look like a professional table
-                cell.border = {
+        
+        allDomains.forEach(domain => {
+            worksheet.mergeCells(currentRow, 1, currentRow, 2);
+            worksheet.getCell(currentRow, 1).value = domain.title;
+            worksheet.getCell(currentRow, 1).font = { bold: true };
+            worksheet.getCell(currentRow, 1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '808080 ' } };
+            const domainCell = worksheet.getCell(currentRow, 1);
+            domainCell.value = domain.title;
+            domainCell.style = {
+                font: { bold: true, size: 11 },
+                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: '808080' } },
+                alignment: { horizontal: 'center', vertical: 'middle' },
+                border: {
                     top: { style: 'thin' },
                     left: { style: 'thin' },
                     bottom: { style: 'thin' },
                     right: { style: 'thin' }
-                };
-            });
-
-            // 3. Set Column B width so the text isn't cramped
-            worksheet.getColumn(labelCol).width = 50;
-
-            // 1. Write Name to Row 1
-            const nameCell = worksheet.getCell(1, colNum);
-            nameCell.value = `${index + 1}. ${student.name.toUpperCase()}`;
-            nameCell.style = headerStyle; // Keeps the 90-degree rotation
-
-            // 2. Write Age to Row 2
-            const ageCell = worksheet.getCell(2, colNum);
-            const ageValue = student.age ? student.age : "N/A";
-            ageCell.value = `${ageValue}`;
-
-            //3rd row
-            // 3. Write Sex to Row 3
-            const sexCell = worksheet.getCell(3, colNum);
-            // Match the dropdown values "M" or "F"
-            // If student.sex is "M", show "Male". Otherwise, show "Female  "
-            sexCell.value = (student.sex === "M") ? "Lalaki" : "Babae";
-
-            sexCell.style = headerStyle;
-            // Apply style to Age cell as well so it matches the rotation
-            ageCell.style = headerStyle;
-
-            // 3. Set Column Width
-            worksheet.getColumn(colNum).width = 4;
-        });
-
-        // Adjust Row Heights to fit the rotated text
-        worksheet.getRow(1).height = 150; // Height for Name
-        worksheet.getRow(2).height = 35;  // Height for Age
-
-        // 4. Corrected Domain Mapping
-        let currentRow = 4;
-        const allDomains = [
-            { title: "GROSS MOTOR DOMAIN", list: milestonesGM, key: "gmChecks", scaledKey: "gmScaled" },
-            { title: "FINE MOTOR DOMAIN", list: milestoneFM, key: "fmChecks", scaledKey: "fmScaled" },
-            { title: "SELF-HELP DOMAIN", list: milestoneSHM, key: "shmChecks", scaledKey: "shmScaled" },
-            { title: "RECEPTIVE LANGUAGE DOMAIN", list: milestoneRLM, key: "rlmChecks", scaledKey: "rlmScaled" },
-            { title: "EXPRESSIVE LANGUAGE DOMAIN", list: milestonesEL, key: "elChecks", scaledKey: "elScaled" },
-            { title: "COGNITIVE DOMAIN", list: milestonesCM, key: "cmChecks", scaledKey: "cmScaled" },
-            { title: "SOCIO-EMOTIONAL DOMAIN", list: milestoneSEM, key: "semChecks", scaledKey: "semScaled" }
-        ];
-
-        allDomains.forEach(domain => {
-            if (!domain.list || domain.list.length === 0) return;
-
-            // Domain Header Row
-            worksheet.mergeCells(currentRow, 1, currentRow, 2);
-            const dCell = worksheet.getCell(currentRow, 1);
-            dCell.value = domain.title;
-            dCell.font = { bold: true };
-            dCell.alignment = { horizontal: 'center' };
-            dCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F2F2' } };
+                }
+            };
             currentRow++;
 
             domain.list.forEach((milestone, mIdx) => {
@@ -830,68 +701,170 @@ async function exportToExcel() {
                 row.getCell(1).value = mIdx + 1;
                 row.getCell(2).value = milestone;
                 row.getCell(2).alignment = { wrapText: true };
-
-                batchData.forEach((student, sIdx) => {
-                    const colNum = studentStartCol + sIdx;
-                    const cell = row.getCell(colNum);
-
-                    // Correctly referencing the check arrays saved in saveToBatch()
+                allStudentsSorted.forEach(student => {
+                    const col = studentColMap.get(student.name);
                     if (student[domain.key] && student[domain.key][mIdx]) {
-                        cell.value = "✓";
-                        cell.alignment = { horizontal: 'center' };
+                        row.getCell(col).value = "✓";
+                        row.getCell(col).alignment = { horizontal: 'center' };
                     }
-                    cell.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
+                    row.getCell(col).border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
                 });
+                
                 currentRow++;
+                
             });
+
+            const rawScoreRow = worksheet.getRow(currentRow);
+            rawScoreRow.getCell(2).value = 'BILANG NG ISKOR: ';
+            rawScoreRow.getCell(2).style = scoreLabelStyle;
+            allStudentsSorted.forEach(student => {
+                const col = studentColMap.get(student.name);
+                rawScoreRow.getCell(col).value = student[domain.rs] || 0;
+                rawScoreRow.getCell(col).style = scoreLabelStyle;
+            });
+            currentRow += 2;
         });
 
-        // 5. ADD SUMMARY SCORING ROWS AT THE BOTTOM
-        currentRow++; // Add a gap
+        // 6. FINAL SCORING SECTION (At the bottom of Sheet 1)
+        currentRow++; // Add a little space after the last domain
 
-        // Row for Sum of Scaled Scores
-        const sumRow = worksheet.getRow(currentRow);
-        sumRow.getCell(2).value = "SUM OF SCALED SCORES";
-        sumRow.getCell(2).style = scoreLabelStyle;
+        const finalSummaryLabels = [
+            { text: "SUM OF SCALED SCORES", key: "totalScaled" }, // You might need to calculate this if not in object
+            { text: "STANDARD SCORE", key: "totalStd" },
+            { text: "INTERPRETATION", key: "finalInterp" }
+        ];
 
-        // Row for Standard Score
-        const stdRow = worksheet.getRow(currentRow + 1);
-        stdRow.getCell(2).value = "STANDARD SCORE";
-        stdRow.getCell(2).style = scoreLabelStyle;
+        finalSummaryLabels.forEach((labelObj, i) => {
+            const row = worksheet.getRow(currentRow);
+            row.getCell(2).value = labelObj.text;
+            row.getCell(2).style = scoreLabelStyle;
+            
+            // Adjust row height for Interpretation to fit the vertical text if needed
+            if (labelObj.text === "INTERPRETATION") {
+                row.height = 200; 
+            }
 
-        // Row for Interpretation
-        const interpRow = worksheet.getRow(currentRow + 2);
-        interpRow.getCell(2).value = "INTERPRETATION";
-        interpRow.getCell(2).style = scoreLabelStyle;
+            allStudentsSorted.forEach(student => {
+                const col = studentColMap.get(student.name);
+                const cell = row.getCell(col);
+                
+                // Logic to get the value
+                let value = "";
+                if (labelObj.key === "totalScaled") {
+                    value = (student.gmScaled || 0) + (student.fmScaled || 0) + (student.shmScaled || 0) + 
+                            (student.rlmScaled || 0) + (student.elScaled || 0) + (student.cmScaled || 0) + (student.semScaled || 0);
+                } else {
+                    value = student[labelObj.key] || 0;
+                }
 
-        batchData.forEach((student, sIdx) => {
-            const colNum = studentStartCol + sIdx;
-
-            // Calculate Sum of Scaled Scores for this student
-            const totalScaled = (student.gmScaled || 0) + (student.fmScaled || 0) +
-                (student.shmScaled || 0) + (student.rlmScaled || 0) +
-                (student.elScaled || 0) + (student.cmScaled || 0) +
-                (student.semScaled || 0);
-
-            sumRow.getCell(colNum).value = totalScaled;
-            stdRow.getCell(colNum).value = student.totalStd;
-            interpRow.getCell(colNum).value = student.finalInterp;
-
-            // Add vertical alignment to interpretation so it fits
-            interpRow.getCell(colNum).alignment = { textRotation: 90, vertical: 'middle', horizontal: 'center' };
+                cell.value = value;
+                cell.border = scoreLabelStyle.border;
+                
+                // Special alignment for Interpretation (Vertical)
+                if (labelObj.text === "INTERPRETATION") {
+                    cell.alignment = { textRotation: 90, vertical: 'middle', horizontal: 'center' };
+                    cell.font = { bold: true, size: 9 };
+                } else {
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    cell.font = { bold: true };
+                }
+            });
+            currentRow++;
         });
 
-        // 6. Final Download Trigger
+
+
+
+
+
+
+        // --- SHEET 2: SUMMARY REPORT ---
+        // 1. Headers (Now starting from Column 1 since we don't need a vertical label col)
+        const summaryHeaders = [
+            "PANGALAN NG MGA BATA", "EDAD", "KASARIAN",
+            "Gross Motor (RS)", "GM (SS)", "Fine Motor (RS)", "FM (SS)", "Self Help (RS)", "SH (SS)",
+            "Receptive Language (RS)", "RL (SS)", "Expressive Language (RS)", "EL (SS)", "Cognitive Domain (RS)", "CG (SS)",
+            "Socio-Emotional (RS)", "SE (SS)", "SUM OF Scaled Score", "STANDARD SCORE", "INTERPRETATION"
+        ];
+
+        const sHeaderRow = summarySheet.addRow(summaryHeaders);
+        sHeaderRow.eachCell((cell) => {
+            cell.style = {
+                font: { bold: true, color: { argb: 'FFFFFF' } },
+                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4472C4' } },
+                alignment: { horizontal: 'center', vertical: 'middle', wrapText: true },
+                border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+            };
+        });
+        summarySheet.getRow(1).height = 45;
+
+        // 2. Helper Function with Horizontal Separator Rows
+        const writeSummaryGroup = (label, students) => {
+            if (students.length === 0) return;
+
+            // --- ADD HORIZONTAL SEPARATOR ROW ---
+            const separatorRow = summarySheet.addRow([label.toUpperCase()]); 
+            
+            // Access only the first cell (Column A)
+            
+            const separatorCell = separatorRow.getCell(1);
+            separatorCell.style = {
+                font: { bold: true, color: { argb: 'FFFFFF' }, size: 12 },
+                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: (label === "LALAKI" ? '808080' : '808080') } },
+                alignment: { horizontal: 'center', vertical: 'middle' },
+                border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+            };
+            separatorRow.height = 15;
+
+            // --- ADD STUDENT DATA ---
+            students.forEach((student) => {
+                const sumSS = (student.gmScaled || 0) + (student.fmScaled || 0) + (student.shmScaled || 0) + 
+                              (student.rlmScaled || 0) + (student.elScaled || 0) + (student.cmScaled || 0) + (student.semScaled || 0);
+
+                const rowData = [
+                    student.name.toUpperCase(),
+                    student.age || "N/A",
+                    (label === "LALAKI" ? "M" : "F"),
+                    student.gmRaw || 0, student.gmScaled || 0,
+                    student.fmRaw || 0, student.fmScaled || 0,
+                    student.shmRaw || 0, student.shmScaled || 0,
+                    student.rlmRaw || 0, student.rlmScaled || 0,
+                    student.elRaw || 0, student.elScaled || 0,
+                    student.cmRaw || 0, student.cmScaled || 0,
+                    student.semRaw || 0, student.semScaled || 0,
+                    sumSS,
+                    student.totalStd || 0,
+                    student.finalInterp || "N/A"
+                ];
+
+                const row = summarySheet.addRow(rowData);
+                row.eachCell((cell) => {
+                    cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                });
+                // Align name to the left
+                row.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
+            });
+        };
+
+        // 3. Execute
+        writeSummaryGroup("LALAKI", males);
+        writeSummaryGroup("BABAE", females);
+
+        // 4. Adjust Widths
+        summarySheet.getColumn(1).width = 40;  // Name
+        summarySheet.getColumn(20).width = 45; // Interpretation
+        for(let i=2; i<=19; i++) {
+            summarySheet.getColumn(i).width = 10;
+        }
+        // 7. Final Download
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         const url = window.URL.createObjectURL(blob);
         const anchor = document.createElement('a');
         anchor.href = url;
-        anchor.download = `ECD_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
-        document.body.appendChild(anchor);
+        anchor.download = `PECD_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
         anchor.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(anchor);
 
     } catch (error) {
         console.error("Export Error:", error);
@@ -907,5 +880,5 @@ window.addEventListener('load', function() {
     // Set a timeout so it shows for at least 2 seconds for branding
     setTimeout(() => {
         splash.classList.add('fade-out');
-    }, 3000); 
+    }, 1000); 
 });
