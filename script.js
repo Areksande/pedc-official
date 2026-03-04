@@ -168,7 +168,7 @@ const scaledScoreTables = {
         },
         receptiveLanguage: {
             1: [0, 1], 2: [null, null], 3: [2, 2], 4: [null, null], 5: [null, null],
-            6: [3, 3], 7: [null, null], 8: [4, 4], 9: [null, null], 10: [null, null],
+            6: [3, 3], 7: [null, null], 8: [null, null], 9: [4, 4], 10: [null, null],
             11: [5, 5], 12: [null, null], 13: [null, null]
         },
         expressiveLanguage: {
@@ -179,7 +179,7 @@ const scaledScoreTables = {
         },
         cognitive: {
             1: [0, 8], 2: [1, 1], 3: [2, 3], 4: [4, 4], 5: [5, 5],
-            6: [6, 7], 7: [8, 8], 8: [9, 10], 9: [11, 11], 10: [12, 12],
+            6: [7, 7], 7: [8, 8], 8: [9, 10], 9: [11, 11], 10: [12, 12],
             11: [13, 14], 12: [15, 15], 13: [16, 17], 14: [18, 18], 15: [19, 20],
             16: [21, 21]
         },
@@ -609,8 +609,7 @@ async function exportToExcel() {
             "Expressive Language (RS)", "EL (SS)",
             "Cognitive Domain (RS)", "CG (SS)",
             "Socio-Emotional (RS)", "SE (SS)",
-            "TOTAL Raw Score",
-            "TOTAL Sum Scaled Score",
+            "TOTAL Sum Scaled Score", // Shifted up
             "STANDARD SCORE",
             "INTERPRETATION"
         ];
@@ -625,31 +624,24 @@ async function exportToExcel() {
 
         const summaryHeaderRow = summarySheet.addRow(summaryHeaders);
         summaryHeaderRow.height = 35;
-        summaryHeaderRow.width = 50;
         summaryHeaderRow.eachCell((cell) => { cell.style = summaryHeaderStyle; });
 
         // Add Student Data Rows
         batchData.forEach(student => {
-
-
-            const sumRS = (student.gmRaw || 0) + (student.fmRaw || 0) +
-                (student.shmRaw || 0) + (student.rlmRaw || 0) +
-                (student.elRaw || 0) + (student.cmRaw || 0) +
-                (student.semRaw || 0);
-
             // Calculate Sum of Scaled Scores (SS)
             const sumSS = (student.gmScaled || 0) + (student.fmScaled || 0) +
                 (student.shmScaled || 0) + (student.rlmScaled || 0) +
                 (student.elScaled || 0) + (student.cmScaled || 0) +
                 (student.semScaled || 0);
 
+            // 2. Removed sumRS from rowData
             const rowData = [
                 student.name.toUpperCase(),
                 student.age || "N/A",
-                (student.sex === "M" ? "MALE" : "FEMALE"),
+                (student.sex === "M" || student.sex === "MALE" ? "MALE" : "FEMALE"),
 
                 // Domain Scores: Raw (RS) then Scaled (SS)
-               student.gmRaw || 0, student.gmScaled || 0,
+                student.gmRaw || 0, student.gmScaled || 0,
                 student.fmRaw || 0, student.fmScaled || 0,
                 student.shmRaw || 0, student.shmScaled || 0,
                 student.rlmRaw || 0, student.rlmScaled || 0,
@@ -657,9 +649,8 @@ async function exportToExcel() {
                 student.cmRaw || 0, student.cmScaled || 0,
                 student.semRaw || 0, student.semScaled || 0,
 
-                // Totals and Interpretation
-                sumRS,                       // Total Raw Score
-                sumSS,                       // Total Scaled Score
+                // Totals and Interpretation (Note: sumRS is gone)
+                sumSS,                       // Total Scaled Score (Now Col 18)
                 student.totalStd || 0,       // Standard Score
                 student.finalInterp || "N/A" // Interpretation
             ];
@@ -904,6 +895,5 @@ async function exportToExcel() {
         alert("Export failed: " + error.message);
     }
 }
-
 
 
