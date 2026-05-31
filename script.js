@@ -1,3 +1,5 @@
+
+
 const milestonesGM = [
     "Umaakyat ng mga silya", "Lumalakad nang paurong", "Tumatakbo na hindi nadadapa",
     "Bumababa ng hagdan habang hawak ang isang kamay", "Umaakyat ng hagdan (hawak gabay)",
@@ -120,6 +122,7 @@ const milestoneSEM = [
     "Tinatanggap ang isang kasunduang ginawa ng tagapag-alaga (hal. lilinisin muna ang kuwarto bago maglaro sa labas"
 ];
 
+
 let batchData = [];
 
 window.onload = function () {
@@ -130,6 +133,19 @@ window.onload = function () {
     }
 };
 
+function resetForm() {
+    document.getElementById("pName").value = "";
+    document.getElementById("pSex").selectedIndex = 0;
+    document.getElementById("pBirth").value = "";
+    document.getElementById("pAssess").value = "";
+    document.getElementById("pAge").value = "";
+
+    alert("Form has been reset.");
+
+    // If you have other computed outputs, clear them here too
+}
+
+
 
 // Initialize Tables
 function initTables(list, containerId, checkClass, rawId) {
@@ -138,13 +154,13 @@ function initTables(list, containerId, checkClass, rawId) {
     container.innerHTML = ''; // Clear existing content
     list.forEach((m, i) => {
         container.innerHTML += `
-            <tr>
-                <td width="12">${i + 1}</td>
-                <td>${m}</td>
-                <td width="5" class="center">
-                    <input type="checkbox" class="${checkClass}" onchange="updateDomainUI('${checkClass}', '${rawId}')"style="width: 30px; height: 20px;">
-                </td>
-            </tr>`;
+                <tr>
+                    <td width="12">${i + 1}</td>
+                    <td>${m}</td>
+                    <td width="5" class="center">
+                        <input type="checkbox" class="${checkClass}" onchange="updateDomainUI('${checkClass}', '${rawId}')"style="width: 30px; height: 20px;">
+                    </td>
+                </tr>`;
     });
 }
 
@@ -357,18 +373,21 @@ function updateDomainUI(chkClass, rawId) {
 
 function autoComputeAge() {
     const birthVal = document.getElementById('pBirth').value;
-    if (!birthVal) return;
+    const assessVal = document.getElementById('pAssess').value;
+    if (!birthVal || !assessVal) return;
 
     const birth = new Date(birthVal);
-    const today = new Date();
+    const assess = new Date(assessVal);
 
-    let y = today.getFullYear() - birth.getFullYear();
-    let m = today.getMonth() - birth.getMonth();
-    let d = today.getDate() - birth.getDate();
+
+
+    let y = assess.getFullYear() - birth.getFullYear();
+    let m = assess.getMonth() - birth.getMonth();
+    let d = assess.getDate() - birth.getDate();
 
     if (d < 0) {
         m--;
-        d += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+        d += new Date(assess.getFullYear(), assess.getMonth(), 0).getDate();
     }
     if (m < 0) {
         y--;
@@ -376,10 +395,11 @@ function autoComputeAge() {
     }
 
     const ageString = `${y}.${m}.${d}`;
+    const formattedAge = `${y} years, ${m} months, ${d} days`;
     document.getElementById('pAge').value = ageString;
 
     // Update all domain age displays
-    updateAllAgeDisplays(ageString);
+    updateAllAgeDisplays(formattedAge);
 
     // Update labels
     const labels = document.querySelectorAll('.summary-line span:first-child');
@@ -394,12 +414,12 @@ function autoComputeAge() {
 }
 
 // New function to update all age displays
-function updateAllAgeDisplays(ageString) {
+function updateAllAgeDisplays(formattedAge) {
     const domains = ['gm', 'fm', 'shm', 'rlm', 'el', 'cm', 'sem'];
     domains.forEach(prefix => {
         const ageDisplay = document.getElementById(`${prefix}-age-display`);
         if (ageDisplay) {
-            ageDisplay.innerText = ageString;
+            ageDisplay.innerText = formattedAge;
         }
     });
 }
@@ -421,7 +441,6 @@ function updateOverallSummary() {
     let totalRaw = 0;
     let totalScaled = 0;
 
-    // Calculate totals from each domain
     domains.forEach(domain => {
         const raw = parseInt(document.getElementById(`${domain.prefix}-raw`)?.innerText) || 0;
         const scaled = parseInt(document.getElementById(`${domain.prefix}-scaled`)?.innerText) || 0;
@@ -430,32 +449,29 @@ function updateOverallSummary() {
         totalScaled += scaled;
     });
 
-    // FIX: Handle case when all scaled scores are 0
     let overallStd = 0;
-    let overallInterp = "No milestones achieved";
+    let overallInterp = "";
 
-    if (totalScaled > 0) {
-        // Lookup the Standard Score based on the Sum of Scaled Scores
+    // If nothing is checked, everything stays 0
+    if (totalRaw === 0 || totalScaled === 0) {
+        overallStd = 0;
+        overallInterp = "";
+    } else {
         if (totalScaled < 29) {
-            overallStd = 35; // Floor value if sum is extremely low
+            overallStd = 35;
         } else if (totalScaled > 92) {
-            overallStd = 130; // Ceiling value if sum is extremely high
+            overallStd = 130;
         } else {
             overallStd = overallStandardScoreTable[totalScaled] || 0;
         }
+
         overallInterp = getInterp(overallStd);
     }
 
-    // Update the UI elements
-    const totalRawEl = document.getElementById('totalRaw');
-    const totalScaledEl = document.getElementById('totalScaled');
-    const overallStdEl = document.getElementById('overallStd');
-    const overallInterpEl = document.getElementById('overallInterp');
-
-    if (totalRawEl) totalRawEl.innerText = totalRaw;
-    if (totalScaledEl) totalScaledEl.innerText = totalScaled;
-    if (overallStdEl) overallStdEl.innerText = overallStd;
-    if (overallInterpEl) overallInterpEl.innerText = overallInterp;
+    document.getElementById('totalRaw').innerText = totalRaw;
+    document.getElementById('totalScaled').innerText = totalScaled;
+    document.getElementById('overallStd').innerText = overallStd;
+    document.getElementById('overallInterp').innerText = overallInterp;
 }
 
 // Save to batch function
@@ -464,16 +480,18 @@ function saveToBatch() {
     const sex = document.getElementById('pSex').value;
     const age = document.getElementById('pAge').value;
 
+
+    if (!age) return alert("Please enter the Learner's Age");
     if (!name) return alert("Please enter the Learner's Name");
     if (!sex) return alert("Please select the Learner's Sex");
 
-    // Helper to get domain data with check states
+    // Helper to get domain data with check     states
     function getDomainData(prefix, chkClass) {
         const checkboxes = document.querySelectorAll(`.${chkClass}`);
         const checks = Array.from(checkboxes).map(c => c.checked);
         const raw = checks.filter(c => c).length;
-        const scaled = parseInt(document.getElementById(`${prefix}-scaled`)?.innerText) || 1;
-        const std = parseInt(document.getElementById(`${prefix}-std`)?.innerText) || 55;
+        const scaled = parseInt(document.getElementById(`${prefix}-scaled`)?.innerText || 0);
+        const std = parseInt(document.getElementById(`${prefix}-std`)?.innerText || 0);
         const interp = document.getElementById(`${prefix}-interp`)?.innerText || "Significant Delay";
 
         return { raw, scaled, std, interp, checks };
@@ -489,8 +507,9 @@ function saveToBatch() {
 
     const totalScaledSum = gm.scaled + fm.scaled + shm.scaled + rlm.scaled + el.scaled + cm.scaled + sem.scaled;
 
-    let totalStd = 0;
-    if (totalScaledSum < 29) {
+    if (totalScaledSum === 0) {
+        totalStd = 0;
+    } else if (totalScaledSum < 29) {
         totalStd = 35;
     } else if (totalScaledSum > 92) {
         totalStd = 130;
@@ -533,6 +552,28 @@ document.addEventListener('DOMContentLoaded', function () {
     initTables(milestonesCM, 'cm-rows', 'cm-chk', 'cm-raw');
     initTables(milestoneSEM, 'sem-rows', 'sem-chk', 'sem-raw');
 
+    // Force all domain scores to zero initially
+    domains.forEach(domain => {
+        const rawEl = document.getElementById(`${domain.prefix}-raw`);
+        const scaledEl = document.getElementById(`${domain.prefix}-scaled`);
+        const stdEl = document.getElementById(`${domain.prefix}-std`);
+        const interpEl = document.getElementById(`${domain.prefix}-interp`);
+
+        if (rawEl) rawEl.innerText = "0";
+        if (scaledEl) scaledEl.innerText = "0";
+        if (stdEl) stdEl.innerText = "0";
+        if (interpEl) interpEl.innerText = "";
+    });
+
+    // Force overall summary to zero
+    document.getElementById('totalRaw').innerText = "0";
+    document.getElementById('totalScaled').innerText = "0";
+    document.getElementById('overallStd').innerText = "0";
+    document.getElementById('overallInterp').innerText = "";
+
+    recalculateAllDomains();
+    updateOverallSummary();
+
     const saved = localStorage.getItem("ecdBatchData");
     if (saved) {
         batchData = JSON.parse(saved);
@@ -545,20 +586,17 @@ function updateSidebar() {
     if (!queueElement) return;
 
     queueElement.innerHTML = batchData.map((s, index) => `
-        <div class="student-item">
-            <b>${s.name}</b> (${s.sex}) <br>
-            Age: ${s.age || "N/A"} <br>
-
-            Sum Scaled Score: ${s.totalScaled || 0} <br>
-            Standard Score: ${s.totalStd} <br>
-            Interpretation: ${s.finalInterp || "N/A"}
-            
-            <button onclick="deleteLearner(${index})"
-                style="margin-top:5px;background:red;color:white;border:none;padding:4px 8px;cursor:pointer;">
-                Delete
-            </button>
-        </div>
-    `).join('');
+            <div class="student-item">
+                <b>${s.name}</b> (${s.sex}) <br>
+                Age: ${s.age || "N/A"} <br>
+                
+                
+                <button onclick="deleteLearner(${index})"
+                    style="margin-top:5px;background:red;color:white;border:none;padding:4px 8px;cursor:pointer;">
+                    Delete
+                </button>
+            </div>
+        `).join('');
 }
 
 function deleteLearner(index) {
@@ -568,30 +606,23 @@ function deleteLearner(index) {
     updateSidebar();
 }
 
-
-
-
-
-
-
 //EXCEL///////////////////////////////////////////////////////////////////////////////////////////
-async function exportToExcel() {
+async function exportToExcel(trialName) {
     try {
         if (typeof ExcelJS === 'undefined') {
             alert("ExcelJS library not found!");
             return;
         }
-
         // 1. Setup Workbook and Sheets
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('ECD Checklist');
-        const summarySheet = workbook.addWorksheet('Summary Report');
+        const worksheet = workbook.addWorksheet(`${trialName} ECD Checklist`);
+        const summarySheet = workbook.addWorksheet(`${trialName} Summary Report`);
 
         // 2. Sort Data: Males first, then Females, then alphabetical by name
         const males = batchData.filter(s => s.sex === "M" || s.sex === "MALE")
-                               .sort((a, b) => a.name.localeCompare(b.name));
+            .sort((a, b) => a.name.localeCompare(b.name));
         const females = batchData.filter(s => s.sex === "F" || s.sex === "FEMALE")
-                                 .sort((a, b) => a.name.localeCompare(b.name));
+            .sort((a, b) => a.name.localeCompare(b.name));
         const allStudentsSorted = [...males, ...females];
 
         // 3. Styles
@@ -612,7 +643,7 @@ async function exportToExcel() {
         // --- SHEET 1: ECD CHECKLIST ---
         worksheet.getColumn(1).width = 5;
         worksheet.getColumn(2).width = 45;
-        
+
         const labels = [
             { row: 1, text: "PANGALAN NG MGA BATA" },
             { row: 2, text: "EDAD" },
@@ -629,7 +660,7 @@ async function exportToExcel() {
             };
         });
 
-        let currentCol = 3; 
+        let currentCol = 3;
         const studentColMap = new Map();
 
         const writeGroup = (label, students) => {
@@ -644,7 +675,7 @@ async function exportToExcel() {
                 border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
             };
             worksheet.getColumn(currentCol).width = 3;
-            currentCol++; 
+            currentCol++;
 
             students.forEach((student, index) => {
                 studentColMap.set(student.name, currentCol);
@@ -675,7 +706,7 @@ async function exportToExcel() {
             { title: "SOCIO-EMOTIONAL DOMAIN", list: milestoneSEM, key: "semChecks", rs: "semRaw", ss: "semScaled" }
         ];
 
-        
+
         allDomains.forEach(domain => {
             worksheet.mergeCells(currentRow, 1, currentRow, 2);
             worksheet.getCell(currentRow, 1).value = domain.title;
@@ -709,9 +740,9 @@ async function exportToExcel() {
                     }
                     row.getCell(col).border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
                 });
-                
+
                 currentRow++;
-                
+
             });
 
             const rawScoreRow = worksheet.getRow(currentRow);
@@ -738,28 +769,28 @@ async function exportToExcel() {
             const row = worksheet.getRow(currentRow);
             row.getCell(2).value = labelObj.text;
             row.getCell(2).style = scoreLabelStyle;
-            
+
             // Adjust row height for Interpretation to fit the vertical text if needed
             if (labelObj.text === "INTERPRETATION") {
-                row.height = 200; 
+                row.height = 200;
             }
 
             allStudentsSorted.forEach(student => {
                 const col = studentColMap.get(student.name);
                 const cell = row.getCell(col);
-                
+
                 // Logic to get the value
                 let value = "";
                 if (labelObj.key === "totalScaled") {
-                    value = (student.gmScaled || 0) + (student.fmScaled || 0) + (student.shmScaled || 0) + 
-                            (student.rlmScaled || 0) + (student.elScaled || 0) + (student.cmScaled || 0) + (student.semScaled || 0);
+                    value = (student.gmScaled || 0) + (student.fmScaled || 0) + (student.shmScaled || 0) +
+                        (student.rlmScaled || 0) + (student.elScaled || 0) + (student.cmScaled || 0) + (student.semScaled || 0);
                 } else {
                     value = student[labelObj.key] || 0;
                 }
 
                 cell.value = value;
                 cell.border = scoreLabelStyle.border;
-                
+
                 // Special alignment for Interpretation (Vertical)
                 if (labelObj.text === "INTERPRETATION") {
                     cell.alignment = { textRotation: 90, vertical: 'middle', horizontal: 'center' };
@@ -771,12 +802,6 @@ async function exportToExcel() {
             });
             currentRow++;
         });
-
-
-
-
-
-
 
         // --- SHEET 2: SUMMARY REPORT ---
         // 1. Headers (Now starting from Column 1 since we don't need a vertical label col)
@@ -803,10 +828,10 @@ async function exportToExcel() {
             if (students.length === 0) return;
 
             // --- ADD HORIZONTAL SEPARATOR ROW ---
-            const separatorRow = summarySheet.addRow([label.toUpperCase()]); 
-            
+            const separatorRow = summarySheet.addRow([label.toUpperCase()]);
+
             // Access only the first cell (Column A)
-            
+
             const separatorCell = separatorRow.getCell(1);
             separatorCell.style = {
                 font: { bold: true, color: { argb: 'FFFFFF' }, size: 12 },
@@ -818,8 +843,8 @@ async function exportToExcel() {
 
             // --- ADD STUDENT DATA ---
             students.forEach((student) => {
-                const sumSS = (student.gmScaled || 0) + (student.fmScaled || 0) + (student.shmScaled || 0) + 
-                              (student.rlmScaled || 0) + (student.elScaled || 0) + (student.cmScaled || 0) + (student.semScaled || 0);
+                const sumSS = (student.gmScaled || 0) + (student.fmScaled || 0) + (student.shmScaled || 0) +
+                    (student.rlmScaled || 0) + (student.elScaled || 0) + (student.cmScaled || 0) + (student.semScaled || 0);
 
                 const rowData = [
                     student.name.toUpperCase(),
@@ -854,7 +879,7 @@ async function exportToExcel() {
         // 4. Adjust Widths
         summarySheet.getColumn(1).width = 40;  // Name
         summarySheet.getColumn(20).width = 45; // Interpretation
-        for(let i=2; i<=19; i++) {
+        for (let i = 2; i <= 19; i++) {
             summarySheet.getColumn(i).width = 10;
         }
         // 7. Final Download
@@ -863,7 +888,7 @@ async function exportToExcel() {
         const url = window.URL.createObjectURL(blob);
         const anchor = document.createElement('a');
         anchor.href = url;
-        anchor.download = `PECD_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
+        anchor.download = `${trialName}_PECD_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
         anchor.click();
 
     } catch (error) {
@@ -874,11 +899,11 @@ async function exportToExcel() {
 
 
 
-window.addEventListener('load', function() {
+window.addEventListener('load', function () {
     const splash = document.getElementById('splash-screen');
-    
+
     // Set a timeout so it shows for at least 2 seconds for branding
     setTimeout(() => {
         splash.classList.add('fade-out');
-    }, 1000); 
+    }, 1000);
 });

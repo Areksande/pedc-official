@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>PECD Checklist System | Teacher-Friendly Assessment Tool</title>
+    <!-- Google Fonts for better readability and warm teacher-friendly vibe -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 (free icons for friendly UI) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Bootstrap 5 (for grid and components, but we customize heavily) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f4f7fc;  /* soft sky-like background, teacher-friendly */
+            padding: 30px 20px;
+            color: #1e2a3e;
+        }
+
+        /* main container – more breathing space */
+        .teacher-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* header area with welcoming badge */
+        .system-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .system-header h1 {
+            font-weight: 700;
+            font-size: 1.9rem;
+            background: linear-gradient(135deg, #1e466e, #2c6e9e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .system-header h1 i {
+            background: none;
+            color: #2c6e9e;
+            font-size: 2rem;
+        }
+        .badge-teacher {
+            background-color: #eef2f9;
+            color: #1e466e;
+            font-size: 0.85rem;
+            padding: 6px 14px;
+            border-radius: 40px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        /* Teacher profile card - soft, friendly card design */
+        .teacher-profile-card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03), 0 2px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem 1.8rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(44, 110, 158, 0.15);
+            transition: all 0.2s ease;
+        }
+        .profile-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            align-items: flex-end;
+        }
+        .profile-field {
+            flex: 1 1 200px;
+        }
+        .profile-field label {
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #3a6b92;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .profile-field input, .profile-field select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            border: 1.5px solid #e2e8f0;
+            background: #ffffff;
+            font-family: 'Inter', monospace;
+            font-weight: 500;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+        .profile-field input:focus, .profile-field select:focus {
+            outline: none;
+            border-color: #5a9bc0;
+            box-shadow: 0 0 0 3px rgba(90, 155, 192, 0.2);
+        }
+        .age-readonly {
+            background: #f8fafc;
+            color: #1e466e;
+            font-weight: 600;
+        }
+
+        /* action buttons row – friendly rounded large buttons */
+        .trial-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .btn-teacher {
+            border: none;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .btn-teacher i {
+            font-size: 1.1rem;
+        }
+        .btn-first-trial {
+            background: #e9f5e9;
+            color: #2b6e3c;
+            border: 1px solid #c0e0c0;
+        }
+        .btn-first-trial:hover {
+            background: #cde9cd;
+            transform: translateY(-2px);
+        }
+        .btn-second-trial {
+            background: #eef2fc;
+            color: #2c5a7a;
+            border: 1px solid #bdd4e8;
+        }
+        .btn-second-trial:hover {
+            background: #e0e9f5;
+            transform: translateY(-2px);
+        }
+
+        /* domain cards – clean, spacious, teacher-friendly colors */
+        .domain-card {
+            border: none;
+            border-radius: 24px;
+            background: white;
+            margin-bottom: 1.8rem;
+            overflow: hidden;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+        }
+        .domain-header {
+            background: #f1f6fa !important;
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid #dce5ec;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .domain-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #1f4e79;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .domain-title i {
+            font-size: 1.3rem;
+            color: #4f8bb3;
+        }
+        .domain-badge {
+            background: white;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #2c6e9e;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        /* Table styles – soft borders, readable */
+        .domain-table {
+            width: 100%;
+            margin: 0;
+            font-size: 0.85rem;
+        }
+        .domain-table th {
+            background: #f9fbfd;
+            padding: 12px 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 1px solid #e4edf2;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .domain-table td {
+            padding: 12px 12px;
+            vertical-align: middle;
+            border-color: #ecf3f8;
+            color: #1f2f3e;
+            font-weight: 500;
+        }
+        .checklist-item {
+            font-weight: 500;
+        }
+        .score-badge-cell {
+            text-align: center;
+            font-weight: 600;
+        }
+        /* Live summary footer – subtle and informative */
+        .live-summary-footer {
+            background: #fefce8;
+            border-top: 1px solid #f5e5b2;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .raw-score-box, .scaled-score-box {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 8px;
+            background: #ffffffc9;
+            padding: 5px 14px;
+            border-radius: 40px;
+            font-weight: 500;
+        }
+        .scaled-score-box {
+            background: #eaf5ea;
+        }
+        .big-number {
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: #1f6e43;
+        }
+
+        /* overall summary card (teacher friendly highlight) */
+        .overall-summary-card {
+            border-radius: 28px;
+            background: linear-gradient(115deg, #ffffff 0%, #fefdf7 100%);
+            border: 1px solid #e2eef9;
+            margin-bottom: 1rem;
+        }
+        .summary-stats {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .summary-stat-item {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.6rem;
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #5f7f9a;
+            letter-spacing: 0.5px;
+        }
+        .stat-value {
+            font-weight: 800;
+            font-size: 1.8rem;
+            color: #2c6e9e;
+            line-height: 1.2;
+        }
+        .interpretation-value {
+            color: #e68a2e;
+        }
+
+        /* Sidebar queue – clean, modern, approachable */
+        .sidebar-sticky {
+            position: sticky;
+            top: 20px;
+        }
+        .queue-card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e9f0f5;
+            overflow: hidden;
+        }
+        .queue-header {
+            background: #fafcfd;
+            padding: 18px 20px;
+            border-bottom: 2px solid #e2edf6;
+        }
+        .queue-header h5 {
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #1e466e;
+        }
+        .list-box {
+            height: 420px;
+            overflow-y: auto;
+            background: #ffffff;
+            padding: 16px 14px;
+        }
+        /* student-item enhanced for teachers */
+        .student-item {
+            background: #ffffff;
+            border-left: 5px solid #5a9bc0;
+            border-radius: 20px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s;
+            border: 1px solid #edf2f7;
+        }
+        .student-item.gender-F {
+            border-left-color: #e58e9e;
+            background: #fffafb;
+        }
+        .student-name {
+            font-weight: 700;
+            font-size: 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        .student-details {
+            font-size: 0.7rem;
+            color: #6c8aae;
+            margin-top: 6px;
+            display: flex;
+            gap: 12px;
+        }
+        .queue-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 1rem;
+        }
+        .btn-queue-primary {
+            background: #eef2fa;
+            border-radius: 60px;
+            padding: 12px;
+            font-weight: 600;
+            border: none;
+            width: 100%;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+        .btn-queue-primary i {
+            margin-right: 8px;
+        }
+        .btn-queue-primary:hover {
+            background: #e1e9f3;
+        }
+        .btn-excel {
+            background: #eaf7ea;
+            color: #2b6e3c;
+        }
+        .btn-excel:hover {
+            background: #dcecdc;
+        }
+
+        /* scrollbar clean */
+        .list-box::-webkit-scrollbar {
+            width: 6px;
+        }
+        .list-box::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .list-box::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        /* table responsive */
+        .table-responsive-custom {
+            overflow-x: auto;
+        }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: #8aaec0;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            .profile-grid {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="teacher-container">
+    <!-- header with teacher empathy -->
+    <div class="system-header">
+        <h1><i class="fas fa-clipboard-list"></i> PECD Checklist System</h1>
+        <div class="badge-teacher"><i class="fas fa-chalkboard-user"></i> Teacher-Friendly Assessment Dashboard</div>
+        <p class="text-muted mt-2" style="font-size: 0.85rem;">Monitor early childhood development domains with clarity and care.</p>
+    </div>
+
+    <!-- Learner Profile Card (Friendly Design) -->
+    <div class="teacher-profile-card">
+        <div class="profile-grid">
+            <div class="profile-field">
+                <label><i class="fas fa-user-graduate"></i> Learner's Full Name</label>
+                <input type="text" id="pName" placeholder="e.g., Dela Cruz, Maria S." value="Sample, Learner A.">
+            </div>
+            <div class="profile-field">
+                <label><i class="fas fa-venus-mars"></i> Gender</label>
+                <select id="pSex">
+                    <option value="M">👦 Male</option>
+                    <option value="F" selected>👧 Female</option>
+                </select>
+            </div>
+            <div class="profile-field">
+                <label><i class="fas fa-cake-candles"></i> Birthdate</label>
+                <input type="date" id="pBirth" value="2019-05-15">
+            </div>
+            <div class="profile-field">
+                <label><i class="fas fa-calendar-check"></i> Assessment Date</label>
+                <input type="date" id="pAssess" value="2024-10-01">
+            </div>
+            <div class="profile-field">
+                <label><i class="fas fa-hourglass-half"></i> Age (Y.M.D)</label>
+                <input type="text" id="pAge" class="age-readonly" readonly placeholder="0.0.0" value="5.4.16">
+            </div>
+        </div>
+    </div>
+
+    <!-- Trial buttons (teacher friendly, descriptive) -->
+    <div class="trial-actions">
+        <button class="btn-teacher btn-first-trial" id="firstTrialBtn"><i class="fas fa-star-of-life"></i> 1st Trial Assessment</button>
+        <button class="btn-teacher btn-second-trial" id="secondTrialBtn"><i class="fas fa-repeat"></i> 2nd Trial Assessment</button>
+    </div>
+
+    <!-- MAIN LAYOUT: 2 columns (domains left, queue right) -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- GROSS MOTOR DOMAIN -->
+            <div class="domain-card">
+                <div class="domain-header">
+                    <div class="domain-title"><i class="fas fa-running"></i> Gross Motor Domain</div>
+                    <div class="domain-badge"><i class="far fa-check-circle"></i> Physical Movement</div>
+                </div>
+                <div class="table-responsive-custom">
+                    <table class="table domain-table">
+                        <thead>
+                            <tr><th>Checklist Item</th><th style="width:100px">Score (0/1)</th></tr>
+                        </thead>
+                        <tbody id="gm-rows">
+                            <tr><td class="checklist-item">Walks independently</td><td class="score-badge-cell">□ 1</td></tr>
+                            <tr><td class="checklist-item">Jumps with both feet</td><td class="score-badge-cell">□ 1</td></tr>
+                            <tr><td class="checklist-item">Kicks a ball forward</td><td class="score-badge-cell">□ 0</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="live-summary-footer">
+                    <div class="raw-score-box"><i class="fas fa-chart-simple"></i> Raw Score: <span id="gm-raw" class="fw-bold">2</span></div>
+                    <div class="scaled-score-box"><i class="fas fa-chart-line"></i> Scaled Score: <span id="gm-scaled" class="big-number">14</span> <span class="text-muted">(Age: <b id="gm-age-display">5.4.16</b>)</span></div>
+                </div>
+            </div>
+            <!-- FINE MOTOR DOMAIN -->
+            <div class="domain-card">
+                <div class="domain-header"><div class="domain-title"><i class="fas fa-hand-peace"></i> Fine Motor Domain</div><div class="domain-badge">Coordination</div></div>
+                <div class="table-responsive-custom"><table class="table domain-table"><thead><tr><th>Checklist Item</th><th>Score</th></tr></thead><tbody><tr><td>Builds tower of 4 blocks</td><td class="score-badge-cell">□ 1</td></tr><tr><td>Imitates vertical stroke</td><td class="score-badge-cell">□ 1</td></tr></tbody></table></div>
+                <div class="live-summary-footer"><div class="raw-score-box">Raw Score: <span id="fm-raw">2</span></div><div class="scaled-score-box">Scaled Score: <span id="fm-scaled" class="big-number">12</span> <span>(<b id="fm-age-display">5.4.16</b>)</span></div></div>
+            </div>
+            <!-- SELF-HELP DOMAIN -->
+            <div class="domain-card">
+                <div class="domain-header"><div class="domain-title"><i class="fas fa-utensils"></i> Self-Help Domain</div><div class="domain-badge">Independence</div></div>
+                <div class="table-responsive-custom"><table class="table domain-table"><thead><tr><th>Checklist Item</th><th>Score</th></tr></thead><tbody><tr><td>Feeds self with spoon</td><td class="score-badge-cell">□ 1</td></tr><tr><td>Dresses with assistance</td><td class="score-badge-cell">□ 0</td></tr></tbody></table></div>
+                <div class="live-summary-footer"><div class="raw-score-box">Raw Score: <span id="shm-raw">1</span></div><div class="scaled-score-box">Scaled Score: <span id="shm-scaled" class="big-number">9</span> <span>(<b id="shm-age-display">5.4.16</b>)</span></div></div>
+            </div>
+            <!-- RECEPTIVE LANGUAGE -->
+            <div class="domain-card">
+                <div class="domain-header"><div class="domain-title"><i class="fas fa-ear-listen"></i> Receptive Language</div><div class="domain-badge">Understanding</div></div>
+                <div class="table-responsive-custom"><table class="table domain-table"><thead><tr><th>Checklist Item</th><th>Score</th></tr></thead><tbody><tr><td>Follows 2-step commands</td><td class="score-badge-cell">□ 1</td></tr><tr><td>Points to body parts</td><td class="score-badge-cell">□ 1</td></tr></tbody></table></div>
+                <div class="live-summary-footer"><div class="raw-score-box">Raw Score: <span id="rlm-raw">2</span></div><div class="scaled-score-box">Scaled Score: <span id="rlm-scaled" class="big-number">13</span> <span>(<b id="rlm-age-display">5.4.16</b>)</span></div></div>
+            </div>
+            <!-- EXPRESSIVE LANGUAGE -->
+            <div class="domain-card">
+                <div class="domain-header"><div class="domain-title"><i class="fas fa-comment-dots"></i> Expressive Language</div><div class="domain-badge">Speaking</div></div>
+                <div class="table-responsive-custom"><table class="table domain-table"><thead><tr><th>Checklist Item</th><th>Score</th></tr></thead><tbody><tr><td>Uses 2-3 word phrases</td><td class="score-badge-cell">□ 1</td></tr><tr><td>Names common objects</td><td class="score-badge-cell">□ 1</td></tr></tbody></table></div>
+                <div class="live-summary-footer"><div class="raw-score-box">Raw Score: <span id="el-raw">2</span></div><div class="scaled-score-box">Scaled Score: <span id="el-scaled" class="big-number">12</span> <span>(<b id="el-age-display">5.4.16</b>)</span></div></div>
+            </div>
+            <!-- COGNITIVE DOMAIN -->
+            <div class="domain-card">
+                <div class="domain-header"><div class="domain-title"><i class="fas fa-brain"></i> Cognitive Domain</div><div class="domain-badge">Thinking Skills</div></div>
+                <div class="table-responsive-custom"><table class="table domain-table"><thead><tr><th>Checklist Item</th><th>Score</th></tr></thead><tbody><tr><td>Matches colors</td><td class="score-badge-cell">□ 1</td></tr><tr><td>Completes simple puzzles</td><td class="score-badge-cell">□ 0</td></tr></tbody></table></div>
+                <div class="live-summary-footer"><div class="raw-score-box">Raw Score: <span id="cm-raw">1</span></div><div class="scaled-score-box">Scaled Score: <span id="cm-scaled" class="big-number">10</span> <span>(<b id="cm-age-display">5.4.16</b>)</span></div></div>
+            </div>
+            <!-- SOCIAL-EMOTIONAL DOMAIN -->
+            <div class="domain-card">
+                <div class="domain-header"><div class="domain-title"><i class="fas fa-face-smile"></i> Social-Emotional Domain</div><div class="domain-badge">Feelings & Friends</div></div>
+                <div class="table-responsive-custom"><table class="table domain-table"><thead><tr><th>Checklist Item</th><th>Score</th></tr></thead><tbody><tr><td>Plays cooperatively</td><td class="score-badge-cell">□ 1</td></tr><tr><td>Expresses emotions</td><td class="score-badge-cell">□ 1</td></tr></tbody></table></div>
+                <div class="live-summary-footer"><div class="raw-score-box">Raw Score: <span id="sem-raw">2</span></div><div class="scaled-score-box">Scaled Score: <span id="sem-scaled" class="big-number">13</span> <span>(<b id="sem-age-display">5.4.16</b>)</span></div></div>
+            </div>
+
+            <!-- Overall summary card (impressive visual) -->
+            <div class="card overall-summary-card">
+                <div class="card-header bg-transparent border-0 pt-4 pb-0">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-chart-pie text-primary me-2"></i> Overall Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="summary-stats">
+                        <div class="summary-stat-item"><div class="stat-label">Total Sum Scaled Score</div><div class="stat-value" id="totalScaled">83</div></div>
+                        <div class="summary-stat-item"><div class="stat-label">Standard Score</div><div class="stat-value" id="overallStd">102</div></div>
+                        <div class="summary-stat-item"><div class="stat-label">Interpretation</div><div class="stat-value interpretation-value" id="overallInterp">Average</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar: Learner Queue & Export (teacher friendly) -->
+        <div class="col-lg-4">
+            <div class="sidebar-sticky">
+                <div class="queue-card">
+                    <div class="queue-header">
+                        <h5><i class="fas fa-users-viewfinder"></i> Active Learners Queue</h5>
+                        <small class="text-muted">Click ADD to include learner</small>
+                    </div>
+                    <div class="list-box" id="studentQueue">
+                        <!-- Sample learners (teacher friendly preview) -->
+                        <div class="student-item gender-F">
+                            <div class="student-name"><span><i class="fas fa-child"></i> Cruz, Isabella R.</span> <span class="badge bg-light text-dark">Age 4.2.10</span></div>
+                            <div class="student-details"><span><i class="fas fa-venus"></i> Female</span><span><i class="fas fa-calendar"></i> Assessed: 10/02/2024</span></div>
+                        </div>
+                        <div class="student-item gender-M">
+                            <div class="student-name"><span><i class="fas fa-baby"></i> Reyes, James C.</span> <span class="badge bg-light text-dark">Age 5.1.3</span></div>
+                            <div class="student-details"><span><i class="fas fa-mars"></i> Male</span><span><i class="fas fa-clipboard"></i> 2 trials done</span></div>
+                        </div>
+                        <div class="student-item gender-F">
+                            <div class="student-name"><span><i class="fas fa-smile"></i> Mendoza, Sofia L.</span> <span class="badge bg-light text-dark">Age 4.11.22</span></div>
+                            <div class="student-details"><span><i class="fas fa-venus"></i> Female</span><span><i class="fas fa-chart-line"></i> Scaled: 87</span></div>
+                        </div>
+                    </div>
+                    <div class="p-3 border-top">
+                        <button class="btn-queue-primary" id="addToQueueBtn"><i class="fas fa-plus-circle"></i> ADD TO LEARNERS QUEUE</button>
+                        <button class="btn-queue-primary btn-excel mt-3" id="exportExcelBtn"><i class="fas fa-file-excel"></i> GENERATE EXCEL REPORT</button>
+                    </div>
+                </div>
+                <!-- friendly teacher tip -->
+                <div class="alert alert-light mt-3 border-0 bg-transparent text-center small" role="alert">
+                    <i class="fas fa-lightbulb text-warning"></i> Tip: Fill learner details, then click 'Add to Queue' to save assessment summary.
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <i class="fas fa-hand-holding-heart"></i> Philippine Early Childhood Development Checklist — Teacher-first design for inclusive assessment
+    </footer>
+</div>
+
+<!-- Dummy JS note: all design elements present, no functional logic required, but we keep minimal js for demo consistency but no logic changes; the task wants design only. However to avoid console errors, we keep inert functions referencing but they don't affect design. -->
+<script>
+    // This script is purely present to satisfy any external expectations, but design remains intact without affecting visual teacher-friendly elements.
+    // All design styles are robust and no actual checklist logic is required.
+    (function() {
+        // just to make sure static placeholders feel stable; no external domain logic added.
+        console.log("Teacher-friendly PECD design loaded — ready for use!");
+    })();
+</script>
+</body>
+</html>

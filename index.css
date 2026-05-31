@@ -1,0 +1,283 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fb;
+    color: #1e293b;
+}
+
+/* MAIN CONTAINER */
+.main-container {
+    width: 100%;
+    padding: 20px;
+}
+
+.header-logo img {
+    display: flex;
+    width: 100px;
+    height: auto;
+    
+}
+
+/* TITLE */
+.main-title {
+    text-align: center;
+    font-size: 2rem;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    margin-bottom: 25px;
+    color: #0f172a;
+}
+
+/* HEADER FORM */
+.system-header {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.label-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.form-icon {
+    width: 15px;
+    height: 15px;
+    margin-top: -10px;
+}
+
+.form-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.form-control,
+.form-select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: white;
+}
+
+.form-control:focus,
+.form-select:focus {
+    outline: none;
+    border-color: #4f46e5;
+}
+
+.button-group {
+    display: flex;
+    align-items: end;
+}
+
+/* BUTTONS */
+button {
+    border: none;
+    border-radius: 8px;
+    padding: 12px 18px;
+    cursor: pointer;
+    font-weight: 600;
+    color: white;
+}
+
+.btn-primary {
+    background: #1f2a68;
+    width: 100%;
+    margin-top: 25px;
+}
+
+.btn-success {
+    margin-top: 20px;
+    width: 100%;
+    margin-right: 100px;
+    background-color: #1f2a68;
+}
+
+.btn-success:hover {
+    background-color: green;
+}
+
+.btn-info {
+    margin-top: 10px;
+    width: 100%;
+    background-color: #1f2a68;
+}
+.btn-info:hover {
+    background-color: green;
+}
+
+.btn-sidebar-primary {
+    background: #1f2a68;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.btn-sidebar-success {
+    background: #059669;
+    width: 100%;
+    margin-top: 15px;
+}
+
+/* BUTTON GROUP */
+.assessment-buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+/* MAIN LAYOUT (FIXED) */
+.layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px; /* LEFT content + RIGHT sidebar */
+    gap: 25px;
+    align-items: start;
+}
+
+.main-content {
+    min-width: 0;
+}
+
+/* DOMAIN CARDS (FIXED) */
+.domain-card,
+.summary-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.domain-header {
+    font-size: 16px;
+    font-weight: bold;
+    color: #49494b;
+    margin-bottom: 15px;
+}
+
+.domain-header-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.domain-icon {
+    width: 24px;
+    height: 24px;
+    margin-top: -15px;
+}
+
+/* TABLE */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* SCORE AREA */
+.live-summary-footer {
+    margin-top: 15px;
+}
+
+.score-badge-container {
+    display: flex;
+    color: white;
+    justify-content: space-between;
+    background-color: #1f2a68;
+    border-radius: 10px;
+    padding: 12px 16px;
+}
+
+.score-label {
+    font-weight: 700;
+    
+}
+
+.score-value {
+    color: wheat;
+    font-weight: 800;
+}
+.text-muted{
+    font-weight: 700;
+}
+
+/* SIDEBAR (FIXED) */
+.sidebar-area {
+    position: sticky;
+    top: 10px;
+    align-self: start;
+    
+}
+
+/* FIXED LIST BOX */
+.list-box {
+
+    min-height: 200px;
+    border-radius: 16px;
+    width: 100%;   /* IMPORTANT FIX */
+    padding: 20px;
+    margin-top: 15px;
+    box-shadow: inset 0 2px 50px rgba(0, 0, 0, 0.05);
+}
+
+.student-item{
+    outline: 1px solid #000000;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 10px;    
+}
+.btn-add{
+    background: #1f2a68;
+    width: 100%;
+    margin-top: 15px;
+}
+.btn-excel{
+    background-color: forestgreen;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.summary-card{
+    background-color: #0f172a;
+    color: white;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .layout-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .assessment-buttons {
+        flex-direction: column;
+    }
+}
