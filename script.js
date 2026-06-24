@@ -441,37 +441,61 @@ function updateOverallSummary() {
     let totalRaw = 0;
     let totalScaled = 0;
 
+    // Make sure domains exists
+    if (!Array.isArray(domains)) {
+        console.error("domains array is not defined.");
+        return;
+    }
+
+    // Sum all domain scores
     domains.forEach(domain => {
-        const raw = parseInt(document.getElementById(`${domain.prefix}-raw`)?.innerText) || 0;
-        const scaled = parseInt(document.getElementById(`${domain.prefix}-scaled`)?.innerText) || 0;
+        const rawElement = document.getElementById(`${domain.prefix}-raw`);
+        const scaledElement = document.getElementById(`${domain.prefix}-scaled`);
+
+        const raw = Number(rawElement?.innerText) || 0;
+        const scaled = Number(scaledElement?.innerText) || 0;
 
         totalRaw += raw;
         totalScaled += scaled;
     });
 
     let overallStd = 0;
-    let overallInterp = "";
+    let overallInterp = "-";
 
-    // If nothing is checked, everything stays 0
-    if (totalRaw === 0 || totalScaled === 0) {
-        overallStd = 0;
-        overallInterp = "";
-    } else {
+    // Only calculate if there is at least one checked item
+    if (totalRaw > 0) {
+
         if (totalScaled < 29) {
             overallStd = 35;
-        } else if (totalScaled > 92) {
+        }
+        else if (totalScaled > 92) {
             overallStd = 130;
-        } else {
+        }
+        else {
             overallStd = overallStandardScoreTable[totalScaled] || 0;
         }
 
         overallInterp = getInterp(overallStd);
     }
 
-    document.getElementById('totalRaw').innerText = totalRaw;
-    document.getElementById('totalScaled').innerText = totalScaled;
-    document.getElementById('overallStd').innerText = overallStd;
-    document.getElementById('overallInterp').innerText = overallInterp;
+    // Update UI
+    const totalRawElement = document.getElementById('totalRaw');
+    const totalScaledElement = document.getElementById('totalScaled');
+    const overallStdElement = document.getElementById('overallStd');
+    const overallInterpElement = document.getElementById('overallInterp');
+
+    if (totalRawElement) totalRawElement.innerText = totalRaw;
+    if (totalScaledElement) totalScaledElement.innerText = totalScaled;
+    if (overallStdElement) overallStdElement.innerText = overallStd;
+    if (overallInterpElement) overallInterpElement.innerText = overallInterp;
+
+    // Debugging
+    console.log({
+        totalRaw,
+        totalScaled,
+        overallStd,
+        overallInterp
+    });
 }
 
 // Save to batch function
@@ -606,7 +630,7 @@ function deleteLearner(index) {
     updateSidebar();
 }
 
-//EXCEL///////////////////////////////////////////////////////////////////////////////////////////
+
 async function exportToExcel(trialName) {
     try {
         if (typeof ExcelJS === 'undefined') {

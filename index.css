@@ -16,20 +16,26 @@ body {
     padding: 20px;
 }
 
-.header-logo img {
+.header-container {
     display: flex;
+    align-items: center;      /* vertical alignment */
+    justify-content: start;  /* center the whole group */
+    gap: 15px;                /* space between logo and title */
+}
+
+.header-logo img {
     width: 100px;
     height: auto;
-    
+    display: block;
 }
 
 /* TITLE */
 .main-title {
-    text-align: center;
-    font-size: 2rem;
+    font-size: 3rem;
+    font-weight: 600;
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-    margin-bottom: 25px;
     color: #0f172a;
+    margin: 0;
 }
 
 /* HEADER FORM */
@@ -111,7 +117,7 @@ button {
 .btn-success {
     margin-top: 20px;
     width: 100%;
-    margin-right: 100px;
+    
     background-color: #1f2a68;
 }
 
@@ -263,8 +269,13 @@ td {
 }
 
 .summary-card{
-    background-color: #0f172a;
+    background-color: #20232c;
     color: white;
+}
+.summary-text{
+    font-size: 1.5rem;
+    line-height: 1.25rem;
+    margin-bottom: 15px;
 }
 
 /* RESPONSIVE */
